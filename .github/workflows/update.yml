@@ -1,0 +1,59 @@
+name: Update
+
+on:
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v3.1.4
+        with:
+          python-version: 3.x
+
+      - name: Instalar deps
+        run: |
+          pip install -U \
+            pyyaml \
+            datasette \
+            yt-supercut
+
+          datasette install datasette-publish-vercel
+          npm install -g vercel
+      
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            youtube.db
+            ~/.cache/pip
+            ~/.cache/yt_supercut
+          key: ${{ runner.os }}-yt-supercut
+
+      - name: Index
+        run: python index.py
+
+      - name: Deploy
+        if: success()
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |-
+          datasette publish vercel youtube.db \
+            -m datasette.yaml \
+            --token $VERCEL_TOKEN \
+            --project $REPO_NAME \
+            --install datasette-youtube-embed \
+            --install datasette-auth-passwords \
+            --install datasette-block-robots
+
+          gh repo edit -h "https://$REPO_NAME-$GITHUB_REPOSITORY_OWNER.vercel.app" || exit 0
+
