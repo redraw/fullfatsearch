@@ -52,7 +52,6 @@ jobs:
             --token $VERCEL_TOKEN \
             --project $REPO_NAME \
             --install datasette-youtube-embed \
-            --install datasette-auth-passwords \
             --install datasette-block-robots
 
           gh repo edit -h "https://$REPO_NAME-$GITHUB_REPOSITORY_OWNER.vercel.app" || exit 0
