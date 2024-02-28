@@ -10,13 +10,21 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions: write-all
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
       - name: Setup Python
-        uses: actions/setup-python@v3.1.4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.x
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            youtube.db
+            ~/.cache
+          key: ${{ runner.os }}-yt-supercut
 
       - name: Instalar deps
         run: |
@@ -28,20 +36,17 @@ jobs:
           datasette install datasette-publish-vercel
           npm install -g vercel
       
-      - name: Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            youtube.db
-            ~/.cache/pip
-            ~/.cache/yt_supercut
-          key: ${{ runner.os }}-yt-supercut
-
       - name: Index
-        run: python index.py
-
+        id: index
+        run: |
+          yt-supercut stats --format json | jq -r .videos > antes
+          python index.py
+          yt-supercut stats --format json | jq -r .videos > despues
+          diff antes despues
+          echo "diff=$?" >> $GITHUB_OUTPUT
+      
       - name: Deploy
-        if: success()
+        if: steps.index.outputs.diff == '1' || contains(github.event.head_commit.message, '[deploy]')
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -53,6 +58,3 @@ jobs:
             --project $REPO_NAME \
             --install datasette-youtube-embed \
             --install datasette-block-robots
-
-          gh repo edit -h "https://$REPO_NAME-$GITHUB_REPOSITORY_OWNER.vercel.app" || exit 0
-
