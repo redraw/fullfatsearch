@@ -31,7 +31,6 @@ jobs:
             pyyaml \
             datasette \
             yt-supercut
-
           datasette install datasette-publish-fly
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
@@ -39,9 +38,9 @@ jobs:
       - name: Index
         id: index
         run: |
-          yt-supercut stats --format json | jq -r .videos > antes
+          yt-supercut stats > antes
           python index.py
-          yt-supercut stats --format json | jq -r .videos > despues
+          yt-supercut stats > despues
           diff antes despues
           echo "diff=$?" >> $GITHUB_OUTPUT
       
