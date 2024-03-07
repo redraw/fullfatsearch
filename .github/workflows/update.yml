@@ -41,6 +41,7 @@ jobs:
           yt-supercut stats > antes
           python index.py
           yt-supercut stats > despues
+          set +e
           diff antes despues
           echo "diff=$?" >> $GITHUB_OUTPUT
       
