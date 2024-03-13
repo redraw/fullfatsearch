@@ -3,7 +3,11 @@ import sys
 import sqlite_utils
 
 
-EXCLUDE = os.getenv("EXCLUDE", []).split(",")
+EXCLUDE = [kw.strip() for kw in os.getenv("EXCLUDE", "").split(",") if kw]
+
+if not EXCLUDE:
+    print("nothing to do")
+    sys.exit(0)
 
 db = sqlite_utils.Database(sys.argv[1])
 subs = db["subtitles"]
@@ -19,4 +23,6 @@ for keyword in EXCLUDE:
 
     with db.conn:
         subs.delete_where(where, ids, analyze=True)
-        subs.rebuild_fts()
+
+subs.rebuild_fts()
+subs.optimize()
