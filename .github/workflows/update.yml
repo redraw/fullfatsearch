@@ -45,7 +45,13 @@ jobs:
         run: |
           python index.py
           yt-supercut stats --format json > stats.json
-      
+
+      - name: Clean
+        env:
+          EXCLUDE: ${{ secrets.EXCLUDE }}
+        run: |
+          python clean.py youtube.db
+
       - name: Commit and push if it changed
         id: commit
         run: |-
