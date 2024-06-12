@@ -7,4 +7,9 @@ databases:
         fts_table: subtitles_fts
         fts_pk: subtitle_id
         searchmode: raw
-        sort_desc: subtitle_id
+        sort_desc: upload_date
+
+plugins:
+  datasette-homepage-table:
+    database: youtube
+    table: subtitles_with_videos

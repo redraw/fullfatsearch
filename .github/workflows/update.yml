@@ -73,4 +73,5 @@ jobs:
             -m datasette.yaml \
             --app $REPO_NAME \
             --install datasette-youtube-embed \
-            --install datasette-block-robots
+            --install datasette-block-robots \
+            --install datasette-homepage-table
