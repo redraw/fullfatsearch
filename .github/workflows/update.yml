@@ -60,7 +60,7 @@ jobs:
           git add stats.json
           title=$(sqlite-utils youtube.db -r "select video_title from videos order by upload_date desc limit 1")
           git commit -m "Ultimo video indexado: ${title}" || exit 0
-          git push
+          git push -f
           echo deploy=1 >> $GITHUB_OUTPUT
 
       - name: Deploy
