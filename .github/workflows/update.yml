@@ -35,6 +35,7 @@ jobs:
           pip install -U \
             pyyaml \
             datasette \
+            yt-dlp \
             yt-supercut
           datasette install datasette-publish-fly
 
