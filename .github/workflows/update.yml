@@ -35,8 +35,8 @@ jobs:
           pip install -U \
             pyyaml \
             datasette \
-            yt-dlp \
             yt-supercut
+          pip install -U yt-dlp
           datasette install datasette-publish-fly
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
