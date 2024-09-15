@@ -62,7 +62,7 @@ jobs:
       - name: Index
         id: index
         run: |
-          ssh -fN -D 1080 ${{ secrets.SSH_HOST }}
+          ssh -fN -D 1080 pi@${{ secrets.SSH_HOST }}
           python index.py
           yt-supercut stats --format json > stats.json
 
