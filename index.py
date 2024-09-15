@@ -14,5 +14,5 @@ if not config["index"]:
 for item in config["index"]:
     url = item["url"]
     lang = item["lang"]
-    cmd = f"yt-supercut index {url} --lang {lang}"
+    cmd = f"yt-supercut index {url} --lang {lang} --proxy socks5://localhost:1080"
     subprocess.run(cmd, shell=True, check=True)
