@@ -63,7 +63,7 @@ jobs:
         id: index
         run: |
           ssh -fN -D 1080 pi@${{ secrets.SSH_HOST }}
-          python index.py
+          yt-supercut index https://www.youtube.com/@CirculoVicioso8/streams --lang es --proxy socks5://localhost:1080
           yt-supercut stats --format json > stats.json
 
       - name: Clean
