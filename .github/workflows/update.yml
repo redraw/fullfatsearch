@@ -32,11 +32,10 @@ jobs:
 
       - name: Instalar deps
         run: |
-          pip install -U \
-            pyyaml \
-            datasette \
-            yt-supercut
+          pip install -U pipx pyyaml
+          pip install -U yt-supercut
           pip install -U yt-dlp
+          pipx install datasette
           datasette install datasette-publish-fly
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
