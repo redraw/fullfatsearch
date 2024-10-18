@@ -55,7 +55,7 @@ jobs:
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           config: |
             Host ${{ secrets.SSH_HOST }}
-              ProxyCommand cloudflared access ssh --hostname %h --id ${{ secrets.CF_SERVICE_TOKEN_ID }} --secret ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
+              ProxyCommand cloudflared access ssh --hostname %h --id ${{ secrets.CF_SERVICE_TOKEN_ID }} --secret ${{ secrets.CF_SERVICE_TOKEN_SECRET }} --loglevel debug
               IdentityFile ~/.ssh/id_ed25519
 
       - name: Index
