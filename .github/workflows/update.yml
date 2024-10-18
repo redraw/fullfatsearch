@@ -52,7 +52,7 @@ jobs:
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           name: id_ed25519
-          known_hosts: unnecessary
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           config: |
             Host ${{ secrets.SSH_HOST }}
               ProxyCommand cloudflared access ssh --hostname %h --id ${{ secrets.CF_SERVICE_TOKEN_ID }} --secret ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
@@ -61,7 +61,7 @@ jobs:
       - name: Index
         id: index
         run: |
-          ssh -fN -D 1080 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
+          ssh -vvv -fN -D 1080 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
           yt-supercut index https://www.youtube.com/@CirculoVicioso8/streams --lang es --proxy socks5://localhost:1080
           yt-supercut stats --format json > stats.json
 
