@@ -52,7 +52,7 @@ jobs:
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           name: id_ed25519
-          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+          known_hosts: unnecessary
           config: |
             Host ${{ secrets.SSH_HOST }}
               ProxyCommand cloudflared access ssh --hostname %h --id ${{ secrets.CF_SERVICE_TOKEN_ID }} --secret ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
