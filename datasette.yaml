@@ -10,7 +10,7 @@ databases:
         sort_desc: upload_date
 
     queries:
-      word_by_video:
+      palabra_x_video:
         sql: |-
           select
             SUM(
@@ -40,6 +40,7 @@ databases:
           limit
             101
         title: contador de palabras x video
+        hide_sql: true
 
 plugins:
   datasette-homepage-table:
