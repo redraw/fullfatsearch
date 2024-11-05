@@ -9,6 +9,38 @@ databases:
         searchmode: raw
         sort_desc: upload_date
 
+    queries:
+      word_by_video:
+        sql: |-
+          select
+            SUM(
+              (LENGTH(s.text) - LENGTH(REPLACE(s.text, :search, ''))) / LENGTH(:search)
+            ) AS contador,
+            s.video_id,
+            s.video_title,
+            v.video_url
+          from
+            subtitles_with_videos s
+            join videos v on s.video_id = v.video_id
+          where
+            subtitle_id in (
+              select
+                rowid
+              from
+                subtitles_fts
+              where
+                subtitles_fts match :search
+            )
+          group by
+            s.video_id,
+            s.video_title,
+            v.video_url
+          order by
+            contador desc
+          limit
+            101
+        title: contador de palabras x video
+
 plugins:
   datasette-homepage-table:
     database: youtube

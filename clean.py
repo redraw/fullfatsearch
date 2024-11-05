@@ -1,11 +1,14 @@
 import os
 import sys
+
 import sqlite_utils
 
 EXCLUDE = [kw.strip() for kw in os.getenv("EXCLUDE", "").split(",") if kw]
 
+
 def placeholders(n):
     return ",".join("?" for _ in range(n))
+
 
 db = sqlite_utils.Database(sys.argv[1])
 subs = db["subtitles"]
