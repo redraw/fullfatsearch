@@ -54,7 +54,7 @@ jobs:
           name: id_ed25519
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           config: |
-            Host ${{ secrets.SSH_HOST }}
+            Host *.terrestre.ar
               ProxyCommand cloudflared access ssh --hostname %h --id ${{ secrets.CF_SERVICE_TOKEN_ID }} --secret ${{ secrets.CF_SERVICE_TOKEN_SECRET }} --loglevel debug
               IdentityFile ~/.ssh/id_ed25519
 
