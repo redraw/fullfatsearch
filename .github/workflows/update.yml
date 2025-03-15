@@ -40,23 +40,23 @@ jobs:
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
-      # - name: Install cloudflared
-      #   run: |
-      #     sudo mkdir -p --mode=0755 /usr/share/keyrings
-      #     curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
-      #     echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared buster main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
-      #     sudo apt-get update && sudo apt-get install cloudflared
-      #
-      # - name: Setup SSH
-      #   uses: shimataro/ssh-key-action@v2
-      #   with:
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     name: id_ed25519
-      #     known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
-      #     config: |
-      #       Host *.terrestre.ar
-      #         ProxyCommand cloudflared access ssh --hostname %h --id ${{ secrets.CF_SERVICE_TOKEN_ID }} --secret ${{ secrets.CF_SERVICE_TOKEN_SECRET }} --loglevel debug
-      #         IdentityFile ~/.ssh/id_ed25519
+      - name: Install cloudflared
+        run: |
+          sudo mkdir -p --mode=0755 /usr/share/keyrings
+          curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
+          echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared buster main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
+          sudo apt-get update && sudo apt-get install cloudflared
+
+      - name: Setup SSH
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          name: id_ed25519
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+          config: |
+            Host *.terrestre.ar
+              ProxyCommand cloudflared access ssh --hostname %h --id ${{ secrets.CF_SERVICE_TOKEN_ID }} --secret ${{ secrets.CF_SERVICE_TOKEN_SECRET }} --loglevel debug
+              IdentityFile ~/.ssh/id_ed25519
 
       - name: Tailscale
         uses: tailscale/github-action@v3
