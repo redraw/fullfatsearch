@@ -47,11 +47,17 @@ jobs:
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:fullfatsearch
 
+      - name: Set Tailscale exit node
+        run: |
+          set -e
+          EXIT_NODE=$(tailscale exit-node suggest | grep -oP "(?<=Suggested exit node: )[^ ]+")
+          echo $EXIT_NODE
+          sudo tailscale set --exit-node $EXIT_NODE
+
       - name: Index
         id: index
         run: |
-          ssh -o StrictHostKeyChecking=no -fN -D 1080 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
-          yt-supercut index https://www.youtube.com/@CirculoVicioso8/streams --lang es --proxy socks5://localhost:1080
+          yt-supercut index https://www.youtube.com/@CirculoVicioso8/streams --lang es
           yt-supercut stats --format json > stats.json
 
       - name: Clean
