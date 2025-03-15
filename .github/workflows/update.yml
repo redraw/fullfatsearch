@@ -46,12 +46,11 @@ jobs:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
-          tailscaled-args: --socks5-server localhost:1080
 
       - name: Index
         id: index
         run: |
-          # ssh -fN -D 1080 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
+          ssh -o StrictHostKeyChecking=no -fN -D 1080 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
           yt-supercut index https://www.youtube.com/@CirculoVicioso8/streams --lang es --proxy socks5://localhost:1080
           yt-supercut stats --format json > stats.json
 
