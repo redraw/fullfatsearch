@@ -88,8 +88,4 @@ jobs:
             --app $REPO_NAME \
             --install datasette-youtube-embed \
             --install datasette-block-robots \
-            --install datasette-homepage-table \
-            --generate-dir deploy
-          cd deploy
-          sed -i '/\[\[services\]\]/a\ auto_stop_machines = "suspend"\n  auto_start_machines = true' fly.toml
-          flyctl deploy
+            --install datasette-homepage-table
