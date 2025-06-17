@@ -2,6 +2,8 @@ name: Update
 
 on:
   push:
+    branches:
+      - main
   schedule:
     - cron: "0 6 * * *"  # 6am
   workflow_dispatch:
@@ -64,7 +66,7 @@ jobs:
         env:
           EXCLUDE: ${{ secrets.EXCLUDE }}
         run: |
-          python clean.py youtube.db
+          python -m scripts.clean youtube.db
 
       - name: Commit and push if it changed
         id: commit
@@ -89,3 +91,13 @@ jobs:
             --install datasette-youtube-embed \
             --install datasette-block-robots \
             --install datasette-homepage-table
+
+      - name: Vectorize
+        run: |
+          yt-supercut build-transcripts --output data
+          git ls-files -o data | xargs python -m scripts.vectorize
+        env:
+          QDRANT_COLLECTION_NAME: fullfatvector
+          QDRANT_LOCATION: ${{ secrets.QDRANT_LOCATION }}
+          QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

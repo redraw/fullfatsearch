@@ -1,1 +1,7 @@
+**/__pycache__
+*.sqlite
+*.db
 .vercel
+.gitignore
+.env
+.venv
