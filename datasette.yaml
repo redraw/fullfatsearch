@@ -10,37 +10,73 @@ databases:
         sort_desc: upload_date
 
     queries:
-      palabra_x_video:
-        sql: |-
-          select
-            SUM(
-              (LENGTH(s.text) - LENGTH(REPLACE(s.text, :search, ''))) / LENGTH(:search)
-            ) AS contador,
-            s.video_id,
-            s.video_title,
-            v.video_url
-          from
-            subtitles_with_videos s
-            join videos v on s.video_id = v.video_id
-          where
-            subtitle_id in (
-              select
-                rowid
-              from
-                subtitles_fts
-              where
-                subtitles_fts match :search
-            )
-          group by
-            s.video_id,
-            s.video_title,
-            v.video_url
-          order by
-            contador desc
-          limit
-            101
-        title: contador de palabras x video
+      fts_context:
+        title: buscar con contexto
         hide_sql: true
+        sql: |-
+          with FTSResults AS (
+            SELECT
+              rowid AS subtitle_id,
+              rank
+            FROM
+              subtitles_fts
+            WHERE
+              text MATCH :q
+          ),
+          RankedSubtitles AS (
+            SELECT
+              s.subtitle_id,
+              s.video_id,
+              s.start_seconds,
+              s.text,
+              fr.rank
+            FROM
+              subtitles s
+              JOIN FTSResults fr ON s.subtitle_id = fr.subtitle_id
+            ORDER BY
+              fr.rank
+          ),
+          ContextConcat AS (
+            SELECT
+              rs.subtitle_id,
+              rs.video_id,
+              rs.start_seconds,
+              rs.rank,
+              rs.text,
+              s2.start_time,
+              GROUP_CONCAT(s2.text, ' ') AS context
+            FROM
+              RankedSubtitles rs
+              JOIN subtitles s2 ON rs.video_id = s2.video_id
+            WHERE
+              s2.start_seconds BETWEEN rs.start_seconds - min(cast(:context_seconds as integer), 150)
+              AND rs.start_seconds + min(cast(:context_seconds as integer), 150)
+            GROUP BY
+              rs.subtitle_id,
+              rs.video_id,
+              rs.start_seconds,
+              rs.rank
+          )
+          SELECT
+            cc.subtitle_id,
+            cc.video_id,
+            cc.start_seconds,
+            cc.start_time,
+            cc.rank,
+            cc.text,
+            cc.context,
+            v.video_title,
+            v.video_url || '&start=' || (cc.start_seconds - 5) AS link,
+            v.upload_date
+          FROM
+            ContextConcat cc
+            JOIN videos v ON cc.video_id = v.video_id
+          ORDER BY
+            cc.rank,
+            cc.video_id,
+            cc.start_seconds
+          LIMIT min(coalesce(cast(:limit as integer), 5), 25)
+          OFFSET coalesce(cast(:offset as integer), 0)
 
 plugins:
   datasette-homepage-table:
