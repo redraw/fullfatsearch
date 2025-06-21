@@ -22,10 +22,14 @@ jobs:
         with:
           python-version: 3.x
 
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Cache
         uses: actions/cache@v4
         with:
           path: |
+            data
             youtube.db
             ~/.cache
           key: ${{ runner.os }}-yt-supercut-${{ hashFiles('stats.json')}}
@@ -34,10 +38,9 @@ jobs:
 
       - name: Instalar deps
         run: |
-          pip install -U pipx pyyaml
-          pip install -U yt-supercut
-          pip install -U yt-dlp
-          pipx install datasette
+          uv tool install yt-supercut
+          uv tool install yt-dlp
+          uv tool install datasette
           datasette install datasette-publish-fly
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
@@ -66,7 +69,7 @@ jobs:
         env:
           EXCLUDE: ${{ secrets.EXCLUDE }}
         run: |
-          python -m scripts.clean youtube.db
+          uv run --with=sqlite-utils -m scripts.clean youtube.db
 
       - name: Commit and push if it changed
         id: commit
@@ -74,7 +77,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@users.noreply.github.com"
           git add stats.json
-          title=$(sqlite-utils youtube.db -r "select video_title from videos order by upload_date desc limit 1")
+          title=$(uvx sqlite-utils youtube.db -r "select video_title from videos order by upload_date desc limit 1")
           git commit -m "Ultimo video indexado: ${title}" || exit 0
           git push -f
           echo deploy=1 >> $GITHUB_OUTPUT
@@ -93,9 +96,11 @@ jobs:
             --install datasette-homepage-table
 
       - name: Vectorize
+        if: steps.commit.outputs.deploy == '1' || contains(github.event.head_commit.message, '[vectorize]')
         run: |
+          uv sync --frozen
           yt-supercut build-transcripts --output data
-          git ls-files -o data | xargs python -m scripts.vectorize
+          git ls-files -o data | xargs uv run -m scripts.vectorize
         env:
           QDRANT_COLLECTION_NAME: fullfatvector
           QDRANT_LOCATION: ${{ secrets.QDRANT_LOCATION }}
