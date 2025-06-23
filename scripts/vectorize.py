@@ -54,11 +54,11 @@ def main(args):
     if not client.collection_exists(QDRANT_COLLECTION_NAME):
         client.create_collection(
             collection_name=QDRANT_COLLECTION_NAME,
-            vectors_config=VectorParams(size=3072, distance=Distance.COSINE),
+            vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
         )
 
     embeddings = OpenAIEmbeddings(
-        model="text-embedding-3-large",
+        model="text-embedding-3-small",
         show_progress_bar=True,
     )
 

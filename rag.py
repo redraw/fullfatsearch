@@ -72,7 +72,7 @@ QDRANT_LOCATION = os.getenv("QDRANT_LOCATION", None)
 QDRANT_PATH = os.getenv("QDRANT_PATH", None)
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", None)
 OPENAI_MODEL = selected_model
-OPENAI_API_KEY = openai_api_key if openai_api_key else os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY = openai_api_key if openai_api_key else os.getenv("OPENAI_API_KEY", "")
 FFS_DATASETTE = os.getenv("FFS_DATASETTE", "http://localhost:8001")
 
 set_default_openai_key(OPENAI_API_KEY)
@@ -94,7 +94,7 @@ def get_vectorstore():
         client=get_qdrant_client(),
         collection_name=QDRANT_COLLECTION_NAME,
         embedding=OpenAIEmbeddings(
-            model="text-embedding-3-large",
+            model="text-embedding-3-small",
             api_key=OPENAI_API_KEY,
         ),
     )
