@@ -60,6 +60,7 @@ with st.sidebar:
         "System Prompt",
         value=INSTRUCTIONS,
         height=200,
+        disabled=not openai_api_key,
     )
     debug = st.toggle(
         "Debug",
@@ -225,7 +226,7 @@ for message in st.session_state.messages:
         st.json(message)
 
 # NEW MESSAGE
-if q := st.chat_input("Consulta"):
+if q := st.chat_input("Consulta", max_chars=1000):
     st.session_state.messages.append({"role": "user", "content": q})
 
     with st.chat_message("user"):
