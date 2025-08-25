@@ -14,6 +14,13 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    env:
+      QDRANT_COLLECTION_NAME: fullfatvector
+      QDRANT_LOCATION: ${{ secrets.QDRANT_LOCATION }}
+      QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -41,6 +48,7 @@ jobs:
           uv tool install yt-dlp
           uv tool install datasette
           datasette install datasette-publish-fly
+          uv sync --frozen
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
@@ -97,11 +105,10 @@ jobs:
       - name: Vectorize
         if: steps.commit.outputs.deploy == '1' || contains(github.event.head_commit.message, '[vectorize]')
         run: |
-          uv sync --frozen
           yt-supercut build-transcripts --output data
           git ls-files -o data | xargs uv run -m scripts.vectorize
-        env:
-          QDRANT_COLLECTION_NAME: fullfatvector
-          QDRANT_LOCATION: ${{ secrets.QDRANT_LOCATION }}
-          QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Ping Qdrant
+        if: always()
+        run: |
+          uv run -m scripts.vectorize --ping

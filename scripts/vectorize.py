@@ -33,6 +33,17 @@ def load_frontmatter_docs(filenames: list[str]) -> list[Document]:
 
 
 def main(args):
+    client = QdrantClient(
+        location=QDRANT_LOCATION,
+        api_key=QDRANT_API_KEY,
+        path=QDRANT_PATH,
+    )
+
+    if args.ping:
+        # wake up free account
+        print(client.get_collections())
+        return
+
     # load
     docs = load_frontmatter_docs(args.files)
 
@@ -45,12 +56,6 @@ def main(args):
     splits = text_splitter.split_documents(docs)
 
     # embed
-    client = QdrantClient(
-        location=QDRANT_LOCATION,
-        api_key=QDRANT_API_KEY,
-        path=QDRANT_PATH,
-    )
-
     if not client.collection_exists(QDRANT_COLLECTION_NAME):
         client.create_collection(
             collection_name=QDRANT_COLLECTION_NAME,
@@ -77,6 +82,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("files", nargs="*", type=str)
+    parser.add_argument("--ping", action="store_true")
     parser.add_argument("--limit", type=int)
     args = parser.parse_args()
     main(args)
