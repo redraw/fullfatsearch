@@ -69,8 +69,8 @@ jobs:
       - name: Index
         id: index
         run: |
-          yt-supercut index https://www.youtube.com/@CirculoVicioso8/streams --lang es
-          yt-supercut stats --format json > stats.json
+          yt-supercut index https://www.youtube.com/@CirculoVicioso8/streams --lang=es
+          yt-supercut stats --format=json > stats.json
 
       - name: Clean
         env:
