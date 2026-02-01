@@ -32,7 +32,12 @@ jobs:
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v6
 
+      - name: Install AWS CLI
+        run: |
+          uv tool install awscli
+
       - name: Cache
+        id: cache
         uses: actions/cache@v4
         with:
           path: |
@@ -41,6 +46,19 @@ jobs:
           key: ${{ runner.os }}-yt-supercut-${{ hashFiles('stats.json')}}
           restore-keys: |
             ${{ runner.os }}-yt-supercut
+
+      - name: Download youtube.db from Cloudflare R2
+        if: steps.cache.outputs.cache-hit != 'true'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          aws s3 cp s3://$R2_BUCKET/youtube.db youtube.db \
+            --endpoint-url $R2_ENDPOINT \
+            --no-progress || echo "No existing youtube.db in R2, starting fresh"
+        continue-on-error: true
 
       - name: Instalar deps
         run: |
@@ -52,25 +70,25 @@ jobs:
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - name: Tailscale
-        uses: tailscale/github-action@v3
-        with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:fullfatsearch
-
-      - name: Set Tailscale exit node
-        run: |
-          set -e
-          EXIT_NODE=$(tailscale exit-node suggest | grep -oP "(?<=Suggested exit node: )[^ ]+")
-          echo $EXIT_NODE
-          sudo tailscale set --exit-node $EXIT_NODE
-
-      - name: Index
-        id: index
-        run: |
-          yt-supercut index https://www.youtube.com/@CirculoVicioso8/streams --lang=es
-          yt-supercut stats --format=json > stats.json
+      # - name: Tailscale
+      #   uses: tailscale/github-action@v3
+      #   with:
+      #     oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      #     oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+      #     tags: tag:fullfatsearch
+      #
+      # - name: Set Tailscale exit node
+      #   run: |
+      #     set -e
+      #     EXIT_NODE=$(tailscale exit-node suggest | grep -oP "(?<=Suggested exit node: )[^ ]+")
+      #     echo $EXIT_NODE
+      #     sudo tailscale set --exit-node $EXIT_NODE
+      #
+      # - name: Index
+      #   id: index
+      #   run: |
+      #     yt-supercut index https://www.youtube.com/@CirculoVicioso8/streams --lang=es
+      #     yt-supercut stats --format=json > stats.json
 
       - name: Clean
         env:
@@ -112,3 +130,15 @@ jobs:
         if: always()
         run: |
           uv run -m scripts.vectorize --ping
+
+      - name: Upload youtube.db to Cloudflare R2
+        if: always()
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          aws s3 cp youtube.db s3://$R2_BUCKET/youtube.db \
+            --endpoint-url $R2_ENDPOINT \
+            --no-progress
